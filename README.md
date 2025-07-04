@@ -28,7 +28,7 @@ This repository contains a Python-based Kafka producer and consumer application,
 
 1. **Start Infrastructure**  
    ```bash
-   chmod 777 ./infra_setup.sh
+   chmod +x ./infra_setup.sh
    ./infra_setup.sh
-   chmod 777 ./producer_consumer_setup
+   chmod +x ./producer_consumer_setup
    ./producer_consumer_setup
