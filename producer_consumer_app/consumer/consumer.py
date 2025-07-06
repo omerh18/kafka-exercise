@@ -2,6 +2,7 @@ from prometheus_client import start_http_server, Counter
 from kafka import KafkaConsumer
 from schemas import message_pb2
 import yaml
+import time
 import os
 
 CONSUMER_GROUP = 'my-consumergroup'
@@ -18,6 +19,7 @@ consumer = KafkaConsumer(
     auto_offset_reset='latest',
     enable_auto_commit=True,
     group_id=CONSUMER_GROUP,
+    max_poll_records=1
 )
 
 messages_consumed = Counter(
@@ -27,26 +29,37 @@ messages_consumed = Counter(
 )
 start_http_server(8001)
 
-for message in consumer:
+while True:
 
-    partition_id = message.partition
-    value_bytes = message.value
+    records = consumer.poll(timeout_ms=1000)
 
-    try:
-        # Deserialize
-        msg = message_pb2.MyMessage()
-        msg.ParseFromString(value_bytes)
+    for topic_partition, messages in records.items():
+        
+        partition_id = topic_partition.partition
 
-        # Access fields
-        timestamp = msg.timestamp
-        contents = msg.contents
+        print(f"Consumed: {len(messages)} from partition #{partition_id}")
 
-        print(f"Received: {timestamp=}, {contents=}, from partition #{partition_id}")
+        for message in messages:
+            
+            value_bytes = message.value
 
-        messages_consumed.labels(
-            partition=str(partition_id), 
-            consumer_group=CONSUMER_GROUP
-        ).inc()
+            try:
+                # Deserialize
+                msg = message_pb2.MyMessage()
+                msg.ParseFromString(value_bytes)
 
-    except Exception as e:
-        print(f"ERROR: Failed to parse message from partition {partition_id}: {e}")
+                # Access fields
+                timestamp = msg.timestamp
+                contents = msg.contents
+
+                print(f"Received: {timestamp=}, {contents=}, from partition #{partition_id}")
+
+                messages_consumed.labels(
+                    partition=str(partition_id), 
+                    consumer_group=CONSUMER_GROUP
+                ).inc()
+
+                time.sleep(1)
+
+            except Exception as e:
+                print(f"ERROR: Failed to parse message from partition {partition_id}: {e}")
