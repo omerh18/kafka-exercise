@@ -12,7 +12,7 @@ docker load -i my-kafka-producer.tar
 
 docker load -i my-kafka-consumer.tar
 
-docker run -d --rm --network kafka_kafka-net -e EXEC_ENV=prod -p 8000:8000 my-kafka-producer:1.0
+docker run -d --rm --network for_candidate_kafka-net -e EXEC_ENV=prod -p 8000:8000 my-kafka-producer:1.0
 
-docker run -d --rm --network kafka_kafka-net -e EXEC_ENV=prod -p 8001:8001 my-kafka-consumer:1.0
+docker run -d --rm --network for_candidate_kafka-net -e EXEC_ENV=prod -p 8001:8001 my-kafka-consumer:1.0
 
